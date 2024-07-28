@@ -75,7 +75,6 @@ def download_images_additional(images, save_path):
 
 
 def fetch_images_from_overlay(index, driver, save_path):
-    print(index)
     # Click the main image to open the overlay
     main_image = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "mainImgA")))
@@ -108,14 +107,31 @@ def fetch_images_from_overlay(index, driver, save_path):
             break
 
 
-def go_inside_product(url, index):
+def get_description(url,idx):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Check if the request was successful
+        soup = BeautifulSoup(response.text, 'html.parser')
+        description_div = soup.find(id='tab-description')
+        if description_div:
+            products[idx]['description'] = description_div.get_text(strip=True)
+        else:
+            return ""
+    except requests.RequestException as e:
+        print(f"Error fetching {url}: {e}")
+        return ""
+
+def go_inside_product(url, index, type):
     save_path = "downloaded_images"
 
     driver = setup_driver()
     driver.get(url)
 
     try:
-        fetch_images_from_overlay(index, driver, save_path)
+        if type=="info":
+            get_description(url,index)
+        else:
+            fetch_images_from_overlay(index, driver, save_path)
     finally:
         driver.quit()
 
@@ -125,11 +141,9 @@ def extract_image_details(soup, base_url):
     for product in soup.find_all("div", class_="product-block"):
         image_tag = product.find("img")
         link_tag = product.find("a", class_="img")
-
+        price_div = product.find('span', class_="money")
         product_info = {}
-
         if image_tag:
-            image_url = urljoin(base_url, image_tag.get("src"))
             alt_text = image_tag.get("alt", "")
             product_details = alt_text.split()
             product_code = product_details[-1]
@@ -147,6 +161,8 @@ def extract_image_details(soup, base_url):
             detail_url = urljoin(base_url, link_tag['href'])
             product_info['detail_url'] = detail_url
 
+        if price_div:
+            product_info['price'] = price_div.get_text(strip=True)
         # Append the product dictionary to the list if it contains essential information
         if product_info:
             products.append(product_info)
@@ -170,18 +186,17 @@ def fetch_html(url):
 
 
 def main():
-    url = "https://www.bellasposabridalandprom.com/c83123/milano-formals-page2.html"
-    save_path = "final_milano_Glitterati_All"
+    url = "https://www.bellasposabridalandprom.com/c83123/milano-formals.html"
     html = fetch_html(url)
     if html:
         soup = parse_html(html)
         extract_image_details(soup, url)
         # download_images(products, save_path)
 
-        # for idx, product in enumerate(products):
-        #     go_inside_product(product['detail_url'], idx)
+        for idx, product in enumerate(products):
+            go_inside_product(product['detail_url'], idx, type='info')
 
-        with open('milano_bellasposa.json', 'a') as json_file:
+        with open('products.json', 'a') as json_file:
             json.dump(products, json_file, indent=4)
 
     # with open('glitterati_products.json', 'r') as json_file:

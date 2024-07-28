@@ -10,7 +10,7 @@ with open('updated_data.json', 'r') as json_file:
     json_data = json.load(json_file)
 
 # Open a new CSV file for writing
-with open('DEMO_shopify_data_1.csv', 'w', newline='') as csv_file:
+with open('csv_data/shopify_data_1.csv', 'w', newline='') as csv_file:
     writer = csv.DictWriter(csv_file, fieldnames=headers)
 
     # Write the header row
