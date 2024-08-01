@@ -3,9 +3,14 @@ import os
 import pandas as pd
 from mimetypes import MimeTypes
 from botocore.exceptions import NoCredentialsError
+import re
 
+# Define the regex pattern
+pattern = re.compile(r'^[A-Z0-9]+_[A-Za-z\s-]+_\d+\.(jpg|png)$')
 
 # https://us-east-1.console.aws.amazon.com/s3/buckets/ecomm-milano-images?region=us-east-1&bucketType=general&tab=objects
+
+
 
 
 # Function to get MIME type based on file extension
@@ -33,8 +38,8 @@ def upload_to_aws(local_file, bucket, s3_file):
         s3.upload_file(local_file, bucket, s3_file, ExtraArgs={
                        'ContentType': content_type, 'ACL': 'public-read'})
         url = f"https://{bucket}.s3.amazonaws.com/{s3_file}"
-        print(f'Successfully uploaded {local_file} to {
-              bucket}/{s3_file} with Content-Type {content_type}')
+        # print(f'Successfully uploaded {local_file} to {
+        #       bucket}/{s3_file} with Content-Type {content_type}')
         return url
 
     except FileNotFoundError:
@@ -50,7 +55,15 @@ def upload_images_and_save_urls(folder_path, bucket_name, csv_file_path):
     image_data = []
     for root, dirs, files in os.walk(folder_path):
         for file in files:
-            if file.endswith(('jpg', 'jpeg', 'png', 'gif')):  # Add more file types if needed
+            # if not bool(pattern.match(file)):
+            #     print(file)
+            #     break
+            # else:
+            #     print("good")
+
+            if file.endswith(('jpg', 'jpeg', 'png', 'gif')):
+
+                # Add more file types if needed
                 local_file_path = os.path.join(root, file)
                 new_file_path = rename_file_to_jpg(local_file_path)
                 # Maintain directory structure in the S3 bucket
