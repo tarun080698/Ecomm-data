@@ -10,7 +10,12 @@ pattern = re.compile(r'^[A-Z0-9]+_[A-Za-z\s-]+_\d+\.(jpg|png)$')
 
 # https://us-east-1.console.aws.amazon.com/s3/buckets/ecomm-milano-images?region=us-east-1&bucketType=general&tab=objects
 
-
+# AWS Credentials
+ACCESS_KEY = ""
+SECRET_KEY = ''
+BUCKET_NAME = 'ecomm-milano-images'
+FOLDER_PATH = 'images/upload_new_1'
+CSV_FILE_PATH = "data/upload_new_1_s3_url_images.csv"
 
 
 # Function to get MIME type based on file extension
